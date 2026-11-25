@@ -1,0 +1,7 @@
+{
+  "title": "Libby Library",
+  "mount": "files",
+  "description": "Search your library, borrow an ebook, and save its .acsm to the SD card.",
+  "author": "you",
+  "version": "0.1.0"
+}
