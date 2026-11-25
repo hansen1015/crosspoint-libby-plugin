@@ -6,7 +6,7 @@
       "description": "Search your library, borrow an ebook, and save its .acsm to the SD card.",
       "author": "you",
       "version": "0.1.0",
-      "base": "https://thedailyamenai.xingxingkho.com/crosspoint-libby-plugin/",
+      "base": "https://raw.githubusercontent.com/hansen1015/crosspoint-libby-plugin/main/",
       "files": [
         "manifest.json",
         "plugin.js"
