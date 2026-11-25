@@ -120,10 +120,26 @@ CrossPoint.registerPlugin(async (container, api) => {
   async function search(query) {
     const url = THUNDER + '/libraries/' + encodeURIComponent(card().library) +
       '/media?query=' + encodeURIComponent(query) + '&format=' + FORMAT +
-      '&perPage=20&page=1';
-    const r = await relay('GET', url, null, { 'X-Client-Id': 'dewey' });
-    if (!ok(r)) throw fail(r, 'search');
-    const j = json(r) || {};
+      '&perPage=12&page=1';
+    // The catalogue reply is 60-140 KB (mostly filter data), too big for
+    // /api/relay, so download it to the SD card and read it back from there.
+    const dest = (api.dir || '/.crosspoint') + '/search.json';
+    let dl;
+    try { dl = await api.fetchToSd(url, dest, {}); }
+    catch (e) { throw new Error('search download failed: ' + e.message); }
+    log('GET thunder/media -> ' + (dl.status || '?') + ' ' + (dl.bytes || 0) + 'B');
+    if (dl.error || (dl.status && (dl.status < 200 || dl.status >= 300))) {
+      throw new Error('search failed (' + (dl.status || dl.error) + ')');
+    }
+    const resp = await fetch('/download?path=' + encodeURIComponent(dest));
+    if (!resp.ok) throw new Error('could not read search results (HTTP ' + resp.status + ')');
+    let j;
+    try { j = JSON.parse(await resp.text()); } catch (e) { throw new Error('search reply was not valid JSON'); }
+    fetch('/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'path=' + encodeURIComponent(dest),
+    }).catch(() => {});
     return (j.items || []).map((it) => ({
       id: it.id,
       title: it.title,
